@@ -5,15 +5,19 @@ import cookieParser from "cookie-parser";
 import connectDB from "./src/db/connect.js";
 import { userRouter } from "./src/routes/user.route.js";
 import logger from "./logger.js";
-const axios = require('axios');
-const cheerio = require('cheerio');
-const hf = require('@huggingface/inference');
+import axios from 'axios';
+import cheerio from 'cheerio';
+import { HfInference } from '@huggingface/inference'
+// const axios = require('axios');
+// const cheerio = require('cheerio');
+// const hf = require('@huggingface/inference');
 const app = express();
 dotenv.config({
     path: '.env'
 });
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin:["http://localhost:5173", "http://localhost","https://saa-su-ji-buyers-frontend.vercel.app"],
+    methods:["GET","POST","OPTIONS"],
     credentials: true
 }));
 app.use(express.json({ limit: "16kb" }));
@@ -27,12 +31,12 @@ app.use("/api/v1/user", userRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to SassuJi, on this line you are talking to SassuJi server !!');
 });
-const hfClient = new hf.HfInference('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');
+const hfClient = new HfInference('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');
 app.get('/scrape', async (req, res) => {
     const url = req.query.url;
     if (!url) {
         return res.status(400).send('Please provide a URL to scrape');
-    }
+    } 
 
     try {
         const { data } = await axios.get(url);
