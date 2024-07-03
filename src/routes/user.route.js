@@ -11,7 +11,7 @@ userRouter.route("/register").post(
 );
 userRouter.route("/login").post(
   loginUser
-)
+);
 
 // userRouter.route("/logout").post(
 //   verifyJWT,

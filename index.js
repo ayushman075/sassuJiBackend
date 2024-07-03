@@ -8,6 +8,7 @@ import logger from "./logger.js";
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { HfInference } from '@huggingface/inference'
+import { productRouter } from "./src/routes/product.route.js";
 // const axios = require('axios');
 // const cheerio = require('cheerio');
 // const hf = require('@huggingface/inference');
@@ -28,9 +29,13 @@ app.use(express.urlencoded({
 app.use(express.static("public"));
 app.use(cookieParser());
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/product",productRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to SassuJi, on this line you are talking to SassuJi server !!');
 });
+
+
+//Scrapper Initialization
 const hfClient = new HfInference('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');
 app.get('/scrape', async (req, res) => {
     const url = req.query.url;
@@ -102,6 +107,8 @@ app.get('/scrape', async (req, res) => {
         res.status(500).send('Error occurred while scraping the website');
     }
 });
+
+//Connecting Database
 connectDB().then(() => {
     const port = process.env.PORT || 3005;
     app.listen(port, () => {
