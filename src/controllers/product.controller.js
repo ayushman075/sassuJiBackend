@@ -25,7 +25,7 @@ const createProduct =asyncHandler( async (req, res) => {
      }
 
      const product = await Product.create({
-      seller:req.user.$id,
+      seller:req.user._id,
       productName:productName,
       description:description,
       price:price,
@@ -65,7 +65,7 @@ const updateProduct =asyncHandler( async (req, res) => {
 
 
   const deleteProduct = asyncHandler( async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.query;
     if(!id ){
       res.status(400).json(new ApiResponse(400,{},"Some fields are empty !!",false));
       throw new ApiError(400,"Some fields are empty!!");

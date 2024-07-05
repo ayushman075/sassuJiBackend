@@ -1,14 +1,15 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware";
-import { upload } from "../middlewares/multer.middleware";
-import { deleteProduct, getProductById, getProducts, updateProduct } from "../controllers/product.controller";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { createProduct, deleteProduct, getProductById, getProducts, updateProduct } from "../controllers/product.controller.js";
 
 
 
 const productRouter = Router()
 productRouter.route("/createProduct").post(
    verifyJWT,
-   upload.single('image')
+   upload.single('image'),
+   createProduct
   );
 productRouter.route("/updateProduct").post(
    verifyJWT,
@@ -20,7 +21,7 @@ productRouter.route("/getProductById").get(
   productRouter.route("/getProducts").get(
     getProducts
   );
-productRouter.route("/deleteProduct").post(
+productRouter.route("/deleteProduct").get(
    verifyJWT,
    deleteProduct
   );
