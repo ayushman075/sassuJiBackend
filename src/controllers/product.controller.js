@@ -59,7 +59,7 @@ const updateProduct =asyncHandler( async (req, res) => {
       res.status(403).json(new ApiResponse(403,{},"Unauthorized to perform action !!",false));
       throw new ApiError(403,"Unauthorized to perform action !!");
     }
-    const updatedProduct = await Product.findByIdAndUpdate(id,updates,{new:true})
+    const updatedProduct = await Product.findByIdAndUpdate(id,updates,{new:true}).populate('seller', 'username email')
     return res.status(201).json(new ApiResponse(201,updatedProduct,"Product updated sucessfully !!"));
   })
 
@@ -103,8 +103,13 @@ const updateProduct =asyncHandler( async (req, res) => {
 
 
 const getProducts =asyncHandler( async (req, res) => {
-    const { page = 1, limit = 20, sellerId, category,price ,rating, keyword} = req.body;
-  
+    const {  sellerId, category,price ,rating, keyword} = req.query;
+    const page = req.query.page;
+    const limit  = req.query.limit;
+  if(!page || !limit){
+    res.status(400).json(new ApiResponse(400,{},"Some fields are empty !!",false));
+      throw new ApiError(400,"Some fields are empty!!");
+  }
     const query = {};
     if (sellerId) query.seller = sellerId;
     if (category) query.category = category;
@@ -113,7 +118,7 @@ const getProducts =asyncHandler( async (req, res) => {
     if (keyword) query.$text = { $search: keyword };
 
     const products = await Product.find(query)
-        .skip((page - 1) * limit)
+        .skip((page) * limit)
         .limit(Number(limit))
         .populate('seller', 'username email');
   
