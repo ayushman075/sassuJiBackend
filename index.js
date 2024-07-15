@@ -17,7 +17,7 @@ dotenv.config({
     path: '.env'
 });
 app.use(cors({
-    origin:["http://localhost:5173", "http://localhost","https://saa-su-ji-buyers-frontend.vercel.app"],
+    origin:["http://localhost:5173", "http://localhost","https://saa-su-ji-buyers-frontend.vercel.app","https://saasuji-seller.vercel.app"],
     methods:["GET","POST","OPTIONS"],
     credentials: true
 }));
