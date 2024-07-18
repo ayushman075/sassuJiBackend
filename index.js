@@ -18,7 +18,7 @@ dotenv.config({
 });
 app.use(cors({
     origin:["http://localhost:5173", "http://localhost","https://saa-su-ji-buyers-frontend.vercel.app","https://saasuji-seller.vercel.app"],
-    methods:["GET","POST","OPTIONS"],
+    methods:["GET","POST","OPTIONS","UPDATE","DELETE"],
     credentials: true
 }));
 app.use(express.json({ limit: "16kb" }));
