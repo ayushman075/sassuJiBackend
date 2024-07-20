@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { addToCart, getCart, getOrderById, getOrdersBySeller, getOrdersByUser } from "../controllers/order.controller.js";
+import { addToCart, getCart, getOrderById, getOrdersBySeller, getOrdersByUser, getOrderStatisticsBySeller } from "../controllers/order.controller.js";
 
 
 const orderRouter = Router()
