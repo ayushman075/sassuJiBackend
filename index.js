@@ -9,6 +9,7 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import { HfInference } from '@huggingface/inference'
 import { productRouter } from "./src/routes/product.route.js";
+import { orderRouter } from "./src/routes/order.route.js";
 // const axios = require('axios');
 // const cheerio = require('cheerio');
 // const hf = require('@huggingface/inference');
@@ -30,6 +31,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/product",productRouter);
+app.use("/api/v1/order",orderRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to SassuJi, on this line you are talking to SassuJi server !!');
 });
