@@ -88,7 +88,7 @@ const updateProduct =asyncHandler( async (req, res) => {
 
 
   const getProductById = asyncHandler( async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
   
     const product = await Product.findById(id).populate('seller', 'username email');
   
