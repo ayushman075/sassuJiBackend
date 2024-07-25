@@ -2,6 +2,7 @@ import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
+import { uploadFileOnCloudinary } from "../utils/cloudinary.js";
 
 
 
@@ -16,11 +17,13 @@ const createProduct =asyncHandler( async (req, res) => {
       return res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
       }
 
-      const imageLocalPath = req.file?.path;
-      let images;
+      const imageLocalPath = req.file.path;
+      console.log(imageLocalPath)
+      const images=[];
       
      if(imageLocalPath){
-       images= await uploadFileOnCloudinary(imageLocalPath);
+      const imgUrl= await uploadFileOnCloudinary(imageLocalPath);
+      images.push(imgUrl);
      }
 
      const product = await Product.create({
@@ -31,7 +34,7 @@ const createProduct =asyncHandler( async (req, res) => {
       category,
       stock,
       validity,
-      images:[images],
+      images:images,
       rating,
       numReviews
      });

@@ -96,7 +96,7 @@ app.get('/scrape', async (req, res) => {
         res.json({
             title: title,
             description: description,
-            textContent: textContent.trim(),
+            //textContent: textContent.trim(),
             highestCategory: highestCategory1,
             highestSubcategory: highestSubcategory,
             allCategories: labels1,

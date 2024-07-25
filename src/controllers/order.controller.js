@@ -5,6 +5,7 @@ import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
+// import { razorpayInstance } from "../db/razorpay.config.js";
 
 
 const addToCart = asyncHandler( async (req, res) => {
@@ -79,6 +80,8 @@ const getCart = asyncHandler(async (req, res) => {
       res.status(200).json(new ApiResponse(200, cart , "Cart fetched successfully !!"));
 })
 
+// const rzpInstance = razorpayInstance();
+
 const createOrder = asyncHandler(async (req, res) => {
     const {  items } = req.body;
     if(!items){
@@ -90,6 +93,11 @@ const createOrder = asyncHandler(async (req, res) => {
       items.forEach(item => {
         item.validUpto = new Date(new Date().setDate(new Date().getDate() + item.validity));
       });
+      const options = {
+        amount :totalAmount*100,
+        currency:"INR",
+        receipt:`receipt_order_1`
+      }
       const newOrder = new Order({
         userId,
         items,
@@ -98,8 +106,19 @@ const createOrder = asyncHandler(async (req, res) => {
       });
   
       await newOrder.save();
+// let rzpOrder;
+//       try {
+//         rzpInstance.orders.create(options,(err,order)=>{
+//           if(err){
+//             return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
+//             rzpOrder=order;
+//           }
+//         })
+//       } catch (error) {
+//               return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
+//       }
   
-      res.status(200).json(new ApiResponse(200,newOrder,"Order placed successfully !!"));
+      res.status(200).json(new ApiResponse(200,{newOrder},"Order placed successfully !!"));
    
   })
   
@@ -223,5 +242,10 @@ const createOrder = asyncHandler(async (req, res) => {
     
   })
   
+
+  const verifyPayment = asyncHandler(async (req,res)=>{
+    const {orderId,paymentId,signature} = req.body;
+    const secretKey = process.env.RZP_KEY_SECRET
+  })
 
   export {addToCart,getCart,createOrder,getOrderById,getOrdersByUser,getOrdersBySeller,getOrderStatisticsBySeller}
