@@ -5,7 +5,8 @@ import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
-// import { razorpayInstance } from "../db/razorpay.config.js";
+import { razorpayInstance } from "../db/razorpay.config.js";
+import crypto from "crypto";
 
 
 const addToCart = asyncHandler( async (req, res) => {
@@ -80,7 +81,7 @@ const getCart = asyncHandler(async (req, res) => {
       res.status(200).json(new ApiResponse(200, cart , "Cart fetched successfully !!"));
 })
 
-// const rzpInstance = razorpayInstance();
+const rzpInstance = razorpayInstance;
 
 const createOrder = asyncHandler(async (req, res) => {
     const {  items } = req.body;
@@ -106,19 +107,20 @@ const createOrder = asyncHandler(async (req, res) => {
       });
   
       await newOrder.save();
-// let rzpOrder;
-//       try {
-//         rzpInstance.orders.create(options,(err,order)=>{
-//           if(err){
-//             return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
-//             rzpOrder=order;
-//           }
-//         })
-//       } catch (error) {
-//               return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
-//       }
+let rzpOrder;
+      try {
+        rzpInstance.orders.create(options,(err,order)=>{
+          if(err){
+            return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
+            
+          }
+          rzpOrder=order;
+        })
+      } catch (error) {
+              return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
+      }
   
-      res.status(200).json(new ApiResponse(200,{newOrder},"Order placed successfully !!"));
+      res.status(200).json(new ApiResponse(200,{newOrder,rzpOrder},"Order placed successfully !!"));
    
   })
   
@@ -245,7 +247,28 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const verifyPayment = asyncHandler(async (req,res)=>{
     const {orderId,paymentId,signature} = req.body;
-    const secretKey = process.env.RZP_KEY_SECRET
+    const secretKey = process.env.RZP_KEY_SECRET;
+    const hmac = crypto.createHmac("sha256",secretKey);
+
+    hmac.update(orderId+"|"+paymentId);
+
+    const generatedSignature = hmac.digest("hex");
+
+
+    if(generatedSignature===signature){
+      await Order.findByIdAndUpdate(orderId,{paymentStatus:'paid'},{new:true})
+      return res.status(200).json(
+        new ApiResponse(200,signature,"Payment Verified !!")
+      )
+    }
+    else{
+      await Order.findByIdAndUpdate(orderId,{paymentStatus:'failed'},{new:true})
+
+      return res.status(400).json(
+        new ApiResponse(400,{},"Payment not Verified !!")
+      )
+    }
+
   })
 
-  export {addToCart,getCart,createOrder,getOrderById,getOrdersByUser,getOrdersBySeller,getOrderStatisticsBySeller}
+  export {addToCart,getCart,createOrder,getOrderById,getOrdersByUser,getOrdersBySeller,getOrderStatisticsBySeller,verifyPayment}
