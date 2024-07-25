@@ -52,10 +52,14 @@ const productSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  validity:{
+    type:Number,
+    required:true,
+    default:365
+  },
   images: [
     {
       type: String,
-      
     },
   ],
   reviews: [reviewSchema],

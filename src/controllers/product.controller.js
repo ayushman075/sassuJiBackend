@@ -7,18 +7,17 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 
 const createProduct =asyncHandler( async (req, res) => {
     
-    const { productName, description, price, category, stock, rating, numReviews } = req.body;
+    const { productName, description, price, category, stock, rating, numReviews, validity } = req.body;
   
 
     if([productName,description,price,category,stock].some((field)=>{
         return field===""||field===undefined
       })){
       return res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
-        throw new ApiError(400,"Some fields are empty!!")
       }
 
       const imageLocalPath = req.file?.path;
-      let images=[];
+      let images;
       
      if(imageLocalPath){
        images= await uploadFileOnCloudinary(imageLocalPath);
@@ -31,6 +30,7 @@ const createProduct =asyncHandler( async (req, res) => {
       price:price,
       category,
       stock,
+      validity,
       images:[images],
       rating,
       numReviews

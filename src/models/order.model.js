@@ -3,9 +3,11 @@ import mongoose, {Schema} from "mongoose";
 const OrderItemSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
   productName: { type: String, required: true },
+  validity:{type:Number,required:true},
+  validUpto:{type:Date,required:true},
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
-  image: { type: String, required: true }, // URL of the product image
+  image: { type: String }, 
 });
 
 const OrderSchema = new mongoose.Schema({
@@ -21,7 +23,11 @@ const OrderSchema = new mongoose.Schema({
 OrderSchema.pre('save', function (next) {
   this.totalQuantity = this.items.reduce((total, item) => total + item.quantity, 0);
   this.totalPrice = this.items.reduce((total, item) => total + item.price * item.quantity, 0);
-  this.updatedAt = Date.now();
+  // this.updatedAt = Date.now();
+  // const currentDate = new Date();
+  // this.items.forEach(item => {
+  //   item.validUpto = new Date(currentDate.setDate(currentDate.getDate() + item.validity)) || Date.now;
+  // });
   next();
 });
 

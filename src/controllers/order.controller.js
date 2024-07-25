@@ -21,7 +21,7 @@ const addToCart = asyncHandler( async (req, res) => {
       }
   
       // Find the user's cart
-      let cart = await Cart.findOne({ userid:req.user._id });
+      let cart = await Cart.findOne({ userId:userId});
   
       if (cart) {
         // Check if the product already exists in the cart
@@ -30,6 +30,9 @@ const addToCart = asyncHandler( async (req, res) => {
         if (existingItemIndex > -1) {
           // If the product exists, update its quantity
           cart.items[existingItemIndex].quantity += quantity;
+          if(cart.items[existingItemIndex].quantity<=0){
+            cart.items.splice(existingItemIndex,1);
+          }
         } else {
           // If the product does not exist, add it to the cart
           cart.items.push({
@@ -37,7 +40,8 @@ const addToCart = asyncHandler( async (req, res) => {
             productName: product.productName,
             price: product.price,
             quantity,
-            image: product.images[0], // Assuming the first image in the array
+            validity:product.validity,
+            image: product.images[0],
             sellerId: product.seller,
           });
         }
@@ -50,6 +54,7 @@ const addToCart = asyncHandler( async (req, res) => {
             productName: product.productName,
             price: product.price,
             quantity,
+            validity:product.validity,
             image: product.images[0], // Assuming the first image in the array
             sellerId: product.seller,
           }],
@@ -64,7 +69,7 @@ const addToCart = asyncHandler( async (req, res) => {
 )
 
 const getCart = asyncHandler(async (req, res) => {
-    userId = req.user._id;
+   const userId = req.user._id;
 
       // Find the user's cart
       const cart = await Cart.findOne({ userId }).populate('items.productId', 'productName price images');
@@ -76,8 +81,15 @@ const getCart = asyncHandler(async (req, res) => {
 
 const createOrder = asyncHandler(async (req, res) => {
     const {  items } = req.body;
+    if(!items){
+      return res.status(501).json(new ApiResponse(501,{},"Order cann't be placed for empty cart !!"));
+
+    }
     const userId = req.user._id;
       const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      items.forEach(item => {
+        item.validUpto = new Date(new Date().setDate(new Date().getDate() + item.validity));
+      });
       const newOrder = new Order({
         userId,
         items,
@@ -93,7 +105,11 @@ const createOrder = asyncHandler(async (req, res) => {
   
 
   const getOrderById = asyncHandler(async (req, res) => {
-    const { orderId } = req.params;
+    const { orderId } = req.query;
+    if(!orderId){
+      return res.status(402).json(new ApiResponse(402,{},"OrderID is required"));
+
+    }
       const order = await Order.findById(orderId).populate('items.productId', 'productName price images');
       if (!order) {
         return res.status(404).json(new ApiResponse(404,{},"Cannot find order with given ID !!"));
@@ -105,7 +121,9 @@ const createOrder = asyncHandler(async (req, res) => {
   const getOrdersByUser = asyncHandler(async (req, res) => {
     const userId = req.user._id;
   
-    
+    if(!userId){
+      return res.status(402).json(new ApiResponse(402,{},"Must login to access this functionality !!"));
+    }
       const orders = await Order.find({ userId }).populate('items.productId', 'productName price images');
   
       if (!orders) {
@@ -119,9 +137,45 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const getOrdersBySeller = asyncHandler(async (req, res) => {
     const sellerId=req.user._id;
-      const orders = await Order.find({ 'items.sellerId': sellerId })
-        .populate('items.productId', 'productName price images')
-        .populate('userId', 'username email');
+    if(!sellerId){
+      return res.status(402).json(new ApiResponse(402,{},"Must login to access this functionality !!"));
+    }
+
+    const orders = await Order.aggregate([
+      // Unwind the items array
+      { $unwind: '$items' },
+      // Lookup to join with Products to get sellerId
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'items.productId',
+          foreignField: '_id',
+          as: 'productDetails'
+        }
+      },
+      // Unwind the productDetails array
+      { $unwind: '$productDetails' },
+      // Match items where the sellerId matches
+      { $match: { 'productDetails.seller':new mongoose.Types.ObjectId(sellerId) } },
+      // Project necessary fields
+      {
+        $project: {
+          _id: 1,
+          items: 1,
+          totalQuantity: 1,
+          totalPrice: 1,
+          paymentStatus: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          productDetails: { productName: 1, price: 1, images: 1 }
+        }
+      }
+    ]);
+
+
+      // const orders = await Order.find({ 'items.': sellerId })
+      //   .populate('items.productId', 'productName price images')
+      //   .populate('userId', 'username email');
   
       if (!orders || orders.length === 0) {
         return res.status(404).json(new ApiResponse(404,{},"No orders found for this seller"));
@@ -136,7 +190,16 @@ const createOrder = asyncHandler(async (req, res) => {
     const sellerId = req.user._id;
       const statistics = await Order.aggregate([
         { $unwind: '$items' },
-        { $match: {'items.sellerId': mongoose.Types.ObjectId(sellerId)}},
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'items.productId',
+            foreignField: '_id',
+            as: 'productDetails'
+          }
+        },
+        { $unwind: '$productDetails' },
+        { $match: {'productDetails.seller': new mongoose.Types.ObjectId(sellerId)}},
         {
           $group: {
             _id: {
