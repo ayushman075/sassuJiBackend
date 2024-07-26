@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { createProduct, deleteProduct, getProductById, getProducts, updateProduct } from "../controllers/product.controller.js";
+import { createProduct, deleteProduct, getProductById, getProducts, getSearchSuggestions, updateProduct } from "../controllers/product.controller.js";
 
 
 
@@ -20,6 +20,9 @@ productRouter.route("/getProductById").get(
   );
   productRouter.route("/getProducts").get(
     getProducts
+  );
+  productRouter.route("/getSuggestions").get(
+    getSearchSuggestions
   );
 productRouter.route("/deleteProduct").get(
    verifyJWT,

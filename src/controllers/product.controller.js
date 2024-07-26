@@ -130,5 +130,37 @@ const getProducts =asyncHandler( async (req, res) => {
 
       return res.status(201).json(new ApiResponse(201,{products,currentPage:Number(page),totalPages, totalProducts: total},"Product searched sucessfully !!"));
   })
+  const getSearchSuggestions = asyncHandler(async (req, res) => {
+    const { keyword } = req.query;
+    const limit = parseInt(req.query.limit) || 5;
+
+    if (!keyword) {
+        return res.status(400).json(new ApiResponse(400, {}, "Keyword is required", false));
+    }
+
+    const query = {
+        $or: [
+            { productName: { $regex: keyword, $options: 'i' } },
+            { category: { $regex: keyword, $options: 'i' } }
+        ]
+    };
+
+    try {
+        const products = await Product.find(query)
+            .limit(limit)
+            .populate('seller', 'username email');
+
+        const suggestions = products.map(product => ({
+            id: product._id,
+            name: product.productName
+        }));
+
+        return res.status(200).json(new ApiResponse(200, suggestions, "Search suggestions fetched successfully!"));
+    } catch (error) {
+        console.error("Error fetching search suggestions:", error);
+        res.status(500).json(new ApiResponse(500, {}, "Internal server error", false));
+    }
+});
+
   
-export {createProduct,updateProduct,deleteProduct,getProductById,getProducts}
+export {createProduct,updateProduct,deleteProduct,getProductById,getProducts,getSearchSuggestions}
