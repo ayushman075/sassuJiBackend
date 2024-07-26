@@ -81,13 +81,12 @@ const getCart = asyncHandler(async (req, res) => {
       res.status(200).json(new ApiResponse(200, cart , "Cart fetched successfully !!"));
 })
 
-const rzpInstance = razorpayInstance;
+
 
 const createOrder = asyncHandler(async (req, res) => {
     const {  items } = req.body;
     if(!items){
       return res.status(501).json(new ApiResponse(501,{},"Order cann't be placed for empty cart !!"));
-
     }
     const userId = req.user._id;
       const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -97,7 +96,7 @@ const createOrder = asyncHandler(async (req, res) => {
       const options = {
         amount :totalAmount*100,
         currency:"INR",
-        receipt:`receipt_order_1`
+        receipt:`order_rcptid_11`
       }
       const newOrder = new Order({
         userId,
@@ -107,20 +106,22 @@ const createOrder = asyncHandler(async (req, res) => {
       });
   
       await newOrder.save();
-let rzpOrder;
+
       try {
-        rzpInstance.orders.create(options,(err,order)=>{
+        razorpayInstance.orders.create(options,function(err,order){
           if(err){
-            return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
+            console.log(err)
+            return res.status(501).json(new ApiResponse(501,err,"Error creating order on Payment Gateway !!"));
             
           }
-          rzpOrder=order;
+          
+          res.status(200).json(new ApiResponse(200,{newOrder,order},"Order placed successfully !!"));
+
         })
       } catch (error) {
               return res.status(501).json(new ApiResponse(501,{},"Error creating order on Payment Gateway !!"));
       }
   
-      res.status(200).json(new ApiResponse(200,{newOrder,rzpOrder},"Order placed successfully !!"));
    
   })
   
@@ -246,11 +247,11 @@ let rzpOrder;
   
 
   const verifyPayment = asyncHandler(async (req,res)=>{
-    const {orderId,paymentId,signature} = req.body;
+    const {rzpOrderId,paymentId,signature,orderId} = req.body;
     const secretKey = process.env.RZP_KEY_SECRET;
     const hmac = crypto.createHmac("sha256",secretKey);
 
-    hmac.update(orderId+"|"+paymentId);
+    hmac.update(rzpOrderId+"|"+paymentId);
 
     const generatedSignature = hmac.digest("hex");
 

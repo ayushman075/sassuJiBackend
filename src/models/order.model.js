@@ -8,6 +8,7 @@ const OrderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
   image: { type: String }, 
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 });
 
 const OrderSchema = new mongoose.Schema({

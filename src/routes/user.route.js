@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { loginUser, registerUser } from "../controllers/user.controller.js";
+import { getCurrentUser, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 
 const userRouter = Router()
 
@@ -13,10 +13,10 @@ userRouter.route("/login").post(
   loginUser
 );
 
-// userRouter.route("/logout").post(
-//   verifyJWT,
-//   logoutUser
-// )
+userRouter.route("/logout").post(
+  verifyJWT,
+  logoutUser
+)
 
 // userRouter.route("/updatedetails").post(
 //   verifyJWT,
@@ -31,6 +31,6 @@ userRouter.route("/login").post(
 
 // userRouter.route("/refresh-token").post(refreshAccessToken)
 
-// userRouter.route("/getcurrentuser").post(verifyJWT,getCurrentUser)
+userRouter.route("/getcurrentuser").post(verifyJWT,getCurrentUser)
 
 export {userRouter}
