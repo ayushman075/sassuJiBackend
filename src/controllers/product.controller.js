@@ -150,12 +150,12 @@ const getProducts =asyncHandler( async (req, res) => {
             .limit(limit)
             .populate('seller', 'username email');
 
-        const suggestions = products.map(product => ({
-            id: product._id,
-            name: product.productName
-        }));
+        // const suggestions = products.map(product => ({
+        //     id: product._id,
+        //     name: product.productName
+        // }));
 
-        return res.status(200).json(new ApiResponse(200, suggestions, "Search suggestions fetched successfully!"));
+        return res.status(200).json(new ApiResponse(200, products, "Search suggestions fetched successfully!"));
     } catch (error) {
         console.error("Error fetching search suggestions:", error);
         res.status(500).json(new ApiResponse(500, {}, "Internal server error", false));
