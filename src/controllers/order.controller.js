@@ -258,6 +258,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
     if(generatedSignature===signature){
       await Order.findByIdAndUpdate(orderId,{paymentStatus:'paid'},{new:true})
+      await Cart.findOneAndDelete({userId:req.user._id})
       return res.status(200).json(
         new ApiResponse(200,signature,"Payment Verified !!")
       )

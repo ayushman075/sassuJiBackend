@@ -17,8 +17,8 @@ const createProduct =asyncHandler( async (req, res) => {
       return res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
       }
 
-      const imageLocalPath = req.file.path;
-      console.log(imageLocalPath)
+      const imageLocalPath = req.file?.path;
+     
       const images=[];
       
      if(imageLocalPath){
@@ -126,6 +126,7 @@ const getProducts =asyncHandler( async (req, res) => {
   
       const total = await Product.countDocuments(query);
       const totalPages = Math.ceil(total / limit);
+      
 
       return res.status(201).json(new ApiResponse(201,{products,currentPage:Number(page),totalPages, totalProducts: total},"Product searched sucessfully !!"));
   })
