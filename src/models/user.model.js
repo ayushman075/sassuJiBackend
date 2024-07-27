@@ -16,7 +16,10 @@ const ProfileSchema = new mongoose.Schema({
   const SellerDetailsSchema = new mongoose.Schema({
     businessName: { type: String },
     businessAddress: { type: String },
-    taxId: { type: String }
+    taxId: { type: String },
+    category:{type:String},
+    website:{type:String},
+    linkedin:{type:String}
   });
   
   const BuyerDetailsSchema = new mongoose.Schema({

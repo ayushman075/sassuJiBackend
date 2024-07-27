@@ -23,12 +23,10 @@ const generateAccessAndRefreshToken = async  (userId) => {
   const registerUser = asyncHandler(
     async (req,res)=>{
         
-       const {username,email,password,role,firstName,lastName,address,phoneNumber,avatarPic,businessName,businessAddress,taxId,shippingAddress,paymentMethods} =req.body
+       const {userData} =req.body
 
 
-      if([username,role,email,password,phoneNumber,firstName,lastName].some((field)=>{
-        return field===""||field===undefined
-      })){
+      if(!userData){
        res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
         throw new ApiError(400,"Some fields are empty!!")
       }
@@ -36,7 +34,7 @@ const generateAccessAndRefreshToken = async  (userId) => {
       
     
 
-     const existedUser = await User.findOne({email:email})
+     const existedUser = await User.findOne({email:userData.email})
       if(existedUser){
        res.status(409).json(new ApiResponse(409,{},"User with email already exists !!",false))
         throw new ApiError(409, "User with email already exists !!")
@@ -49,31 +47,35 @@ const generateAccessAndRefreshToken = async  (userId) => {
       avatar= await uploadFileOnCloudinary(avatarLocalPath);
     }
 
-    const user = await User.create({
-        username,
-        email,
-        password,
-        role,
-        profile:
-                {
-                    firstName,
-                    lastName,
-                    address,
-                    phoneNumber,
-                    avatar
-                },
-        sellerDetails:{
-            businessName,
-            businessAddress,
-            taxId
-        },
-        buyerDetails:{
-            shippingAddress,
-            paymentMethods
-        },
+    const user = await User.create(
+      userData
+      //{
+        // username,
+        // email,
+        // password,
+        // role,
+        // profile:
+        //         {
+        //             firstName,
+        //             lastName,
+        //             address,
+        //             phoneNumber,
+        //             avatar
+        //         },
+        // sellerDetails:{
+        //     businessName,
+        //     businessAddress,
+        //     taxId,
+
+        // },
+        // buyerDetails:{
+        //     shippingAddress,
+        //     paymentMethods
+        // },
                
         
-    })
+    //}
+  )
 
     const checkUser = await User.findById(user._id).select("-password -refreshToken");
 
