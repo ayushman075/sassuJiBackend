@@ -162,5 +162,45 @@ const getProducts =asyncHandler( async (req, res) => {
     }
 });
 
+const addReview = asyncHandler(async (req,res)=>{
+  const {productId,rating,comment}=req.body;
+  if([productId,rating,comment].some((field)=>{
+    return field===""||field===undefined
+  })){
+  return res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
+  }
+
+  const product  = await Product.findById(productId);
+
+  if(!product){
+    return res.status(404).json(new ApiResponse(404,{},"Product not found with given ID !!",false));
+  }
+
+  product.reviews.push({
+    user:req.user._id,
+    name:req.user.username,
+    rating,
+    comment
+  })
+
+  await product.save();
+
+  return res.status(201).json(new ApiResponse(201,product,"Review added successfully !!",true))
   
-export {createProduct,updateProduct,deleteProduct,getProductById,getProducts,getSearchSuggestions}
+})
+
+const getReviews = asyncHandler(async (req,res)=>{
+  const {productId} = req.query;
+  if(!productId){
+    return res.status(400).json(new ApiResponse(400,{},"Some fields are empty!!",false))
+
+  }
+
+  const product = await Product.findById(productId);
+  if(!product){
+    return res.status(404).json(new ApiResponse(404,{},"Product not found with given ID !!",false));
+  }
+  return res.status(200).json(new ApiResponse(200,product.reviews,"Reviews fetched successfully !!",true))
+})
+  
+export {createProduct,updateProduct,deleteProduct,getProductById,getProducts,getSearchSuggestions,addReview,getReviews}

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { createProduct, deleteProduct, getProductById, getProducts, getSearchSuggestions, updateProduct } from "../controllers/product.controller.js";
+import { createProduct, deleteProduct, getProductById, getProducts, getSearchSuggestions, updateProduct,addReview,getReviews } from "../controllers/product.controller.js";
 
 
 
@@ -28,6 +28,14 @@ productRouter.route("/deleteProduct").get(
    verifyJWT,
    deleteProduct
   );
+  productRouter.route("/addReview").post(
+    verifyJWT,
+    addReview
+  );
+productRouter.route("/getReviews").get(
+  verifyJWT,
+  getReviews
+)
 
 
-  export {productRouter}
+export {productRouter}

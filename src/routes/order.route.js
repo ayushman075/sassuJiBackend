@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/multer.middleware.js";
 import { addToCart, createOrder, getCart, getOrderById, getOrdersBySeller, getOrdersByUser, getOrderStatisticsBySeller, verifyPayment } from "../controllers/order.controller.js";
 
 

@@ -222,6 +222,7 @@ const createOrder = asyncHandler(async (req, res) => {
         },
         { $unwind: '$productDetails' },
         { $match: {'productDetails.seller': new mongoose.Types.ObjectId(sellerId)}},
+        {$match:{paymentStatus:"paid"}},
         {
           $group: {
             _id: {
